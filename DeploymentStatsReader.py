@@ -4,6 +4,7 @@ import sys
 import glob
 import collections
 import csv
+import time
 
 class DeploymentStatsReader:
 	def __init__(self):
@@ -19,6 +20,7 @@ class DeploymentStatsReader:
 		if file:
 			result = True
 			print "Reading File:" , file
+			activities["Start Time"] = [ time.ctime(os.path.getctime(file[0])) ]
 			fileReader = open(file[0], 'rb').read()
 			fileText = fileReader.decode('utf-16')
 			fileText = fileText.encode('ascii', 'ignore')
@@ -39,6 +41,9 @@ class DeploymentStatsReader:
 	def getAverages(self, activities):
 		activitiesAvg = collections.OrderedDict()
 		for i, (key, value) in enumerate(activities.iteritems()):
+			if key == "Start Time":
+				activitiesAvg["Start Time"] = value
+				continue
 			sum = 0.0
 			for val in value:
 				sum += float(val)
@@ -54,7 +59,11 @@ class DeploymentStatsReader:
 			fp.writeheader()
 			fp.writerows(self.allActivitiesAvg)
 		
-
+	
+def extractDate(buildPath):
+	print time.ctime(os.path.getctime(glob.glob(buildPath)))
+	
+	
 def get_immediate_subdirectories(a_dir):
   return [name for name in os.listdir(a_dir)
     if os.path.isdir(os.path.join(a_dir, name))]
@@ -63,6 +72,7 @@ buildPath = "//BLD-FS-HD-M1-01/TFS/HDI/HDI-Curr-BuildAndDeploy/"
 listOfDirs =  get_immediate_subdirectories(buildPath)
 deploymentStatsReader = DeploymentStatsReader()
 for subdir in get_immediate_subdirectories(buildPath):
+	#extractDate(buildPath)
 	dir = os.path.join(buildPath, subdir)
 	fullBuildPath = os.path.join(dir, deploymentStatsReader.summaryFileNameStartPattern)
 	activityValues = deploymentStatsReader.readStats(fullBuildPath)
@@ -71,3 +81,4 @@ for subdir in get_immediate_subdirectories(buildPath):
 deploymentStatsReader.writeToFile()
 print len(listOfDirs)
 print len(deploymentStatsReader.allActivitiesAvg)
+
