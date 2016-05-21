@@ -9,7 +9,7 @@ class DeploymentStatsReader:
 	def __init__(self):
 		self.summaryFileNameStartPattern = "WadiSummaryFile-Current*"
 		self.blacklistSet = {"StartTime"}
-		self.deploymentActivities = ["DeployFilesToStorage", "DeployDatabase", "DeployDatabaseBootStrap", "ProvisionRegions" , "DeployMetadataService", "DeployInfraService", "DeployInfraDatabase"]
+		self.deploymentActivities = ["Start Time","DeployFilesToStorage", "DeployDatabase", "DeployDatabaseBootStrap", "ProvisionRegions" , "DeployMetadataService", "DeployInfraService", "DeployInfraDatabase"]
 		self.allActivitiesAvg = []
 		
 	def readStats(self, buildPath):
@@ -43,9 +43,9 @@ class DeploymentStatsReader:
 			for val in value:
 				sum += float(val)
 			activitiesAvg[key] = sum/len(value)
-		print "Activities Average: " , activitiesAvg
 		if activitiesAvg:
 			self.allActivitiesAvg.append(activitiesAvg)
+
 
 	def writeToFile(self):
 		print "All activities averages: ", self.allActivitiesAvg 
@@ -60,20 +60,14 @@ def get_immediate_subdirectories(a_dir):
     if os.path.isdir(os.path.join(a_dir, name))]
 
 buildPath = "//BLD-FS-HD-M1-01/TFS/HDI/HDI-Curr-BuildAndDeploy/"
-get_immediate_subdirectories(buildPath)
-i=0
+listOfDirs =  get_immediate_subdirectories(buildPath)
 deploymentStatsReader = DeploymentStatsReader()
 for subdir in get_immediate_subdirectories(buildPath):
-	if i==25:
-		break
-	i+=1
 	dir = os.path.join(buildPath, subdir)
-	#fullBuildPath = dir + "/" + deploymentStatsReader.summaryFileNameStartPattern
 	fullBuildPath = os.path.join(dir, deploymentStatsReader.summaryFileNameStartPattern)
-	#fullBuildPath = "//BLD-FS-HD-M1-01/TFS/HDI/HDI-Curr-BuildAndDeploy/20160505.3/WadiSummaryFile-Current*"
-	print "fullbuildpath", fullBuildPath
 	activityValues = deploymentStatsReader.readStats(fullBuildPath)
-	print "Activity Values", activityValues
 	if activityValues is not None:
 		deploymentStatsReader.getAverages(activityValues)
 deploymentStatsReader.writeToFile()
+print len(listOfDirs)
+print len(deploymentStatsReader.allActivitiesAvg)
